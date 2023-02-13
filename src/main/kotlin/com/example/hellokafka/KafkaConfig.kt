@@ -1,8 +1,10 @@
-package com.example.hellokafka.producer
+package com.example.hellokafka
 
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.Partitioner
 import org.apache.kafka.common.Cluster
+import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -11,6 +13,11 @@ import java.util.*
 
 @Configuration
 class KafkaConfig {
+
+    companion object {
+        private const val BOOTSTRAP_SERVERS = "my-kafka:9092"
+        private const val GROUP_ID = "test-group"
+    }
 
     @Bean
     fun customKafkaProducer(): KafkaProducer<String, String> {
@@ -26,8 +33,19 @@ class KafkaConfig {
         return props
     }
 
-    companion object {
-        private const val BOOTSTRAP_SERVERS = "my-kafka:9092"
+    @Bean
+    fun customKafkaConsumer(): KafkaConsumer<String, String> {
+        return KafkaConsumer(propertiesToConsumer())
+    }
+
+    private fun propertiesToConsumer(): Properties {
+        val props = Properties()
+        props["bootstrap.servers"] = BOOTSTRAP_SERVERS
+        props["group.id"] = GROUP_ID
+        props["key.deserializer"] = StringDeserializer::class.java
+        props["value.deserializer"] = StringDeserializer::class.java
+        props["enable.auto.commit"] = "false"
+        return props
     }
 
 }
